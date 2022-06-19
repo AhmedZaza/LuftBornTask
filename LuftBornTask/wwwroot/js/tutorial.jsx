@@ -1,14 +1,9 @@
-﻿const data = [
-    { id: 1, author: 'Daniel Lo Nigro', text: 'Hello ReactJS.NET World!' },
-    { id: 2, author: 'Pete Hunt', text: 'This is one comment' },
-    { id: 3, author: 'Jordan Walke', text: 'This is *another* comment' },
-];
-class Container extends React.Component {
+﻿class Container extends React.Component {
     constructor(props) {
         super(props);
         this.state = { data: [] };
     }
-    loadCommentsFromServer() {
+    loadUsersFromServer() {
         const xhr = new XMLHttpRequest();
         xhr.open('get', this.props.fetchUrl, true);
         xhr.onload = () => {
@@ -18,9 +13,9 @@ class Container extends React.Component {
         xhr.send();
     }
     componentDidMount() {
-        this.loadCommentsFromServer();
+        this.loadUsersFromServer();
         window.setInterval(
-            () => this.loadCommentsFromServer(),
+            () => this.loadUsersFromServer(),
             this.props.pollInterval,
         );
     }
@@ -29,23 +24,47 @@ class Container extends React.Component {
             <div className="container">
                 <h1>Users</h1>
                 <UserList data={this.state.data} />
+                <hr />
                 <UserForm submitUrl="/User/Add" />
-            </div>
+            </div >
         );
     }
 }
 class UserList extends React.Component {
     render() {
-        const commentNodes = this.props.data.map(user => (
+        const Users = this.props.data.map(user => (
             <User firstName={user.firstName} key={user.id} id={user.id} lastName={user.lastName} email={user.email}>
             </User>
         ));
         return <table>
-            {this.props.data.map((user =>
-                <tr key={user.id}>{user.firstName}</tr>
-            ))}
-        </table>;
-        //return <div className="userList">{commentNodes}</div>;
+            <thead>
+                <tr>
+                    <th>
+                        First Name
+                    </th>
+                    <th>
+                        Last Name
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                    <th>
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {this.props.data.map((user =>
+                    <tr key={user.id}>
+                        <td>{user.firstName}</td>
+                        <td>{user.lastName}</td>
+                        <td>{user.email}</td>
+                        <td><DeleteBtn id={user.id} /></td>
+                    </tr>
+                ))}
+            </tbody>
+        </table >;
+        return <div className="userList">{Users}</div>;
     }
 }
 class User extends React.Component {
@@ -57,6 +76,22 @@ class User extends React.Component {
                 <h2 className="lastName">{this.props.lastName}</h2>
                 <h2 className="email">{this.props.email}</h2>
             </div>
+        );
+    }
+}
+class DeleteBtn extends React.Component {
+    handleClick = () => {
+        console.log(this.props.id);
+        const data = new FormData();
+        data.append('Id', this.props.id);
+        const xhr = new XMLHttpRequest();
+        xhr.open('post', '/User/Delete', true);
+        xhr.send(data);
+        this.setState({ firstName: '', lastName: '', email: '' });
+    }
+    render() {
+        return (
+            <button type="button" onClick={this.handleClick}>Delete</button>
         );
     }
 }
@@ -86,7 +121,6 @@ class UserForm extends React.Component {
         if (!firstName || !lastName || !email) {
             return;
         }
-        // TODO: send request to the server
         const data = new FormData();
         data.append('FirstName', firstName);
         data.append('LastName', lastName);
@@ -94,7 +128,6 @@ class UserForm extends React.Component {
 
         const xhr = new XMLHttpRequest();
         xhr.open('post', this.props.submitUrl, true);
-        //xhr.onload = () => this.loadCommentsFromServer();
         xhr.send(data);
         this.setState({ firstName: '', lastName: '', email: '' });
     }
@@ -104,7 +137,7 @@ class UserForm extends React.Component {
                 <input type="text" placeholder="Your First Name" value={this.state.firstName} onChange={this.handleFirstNameChange} />
                 <input type="text" placeholder="Your Last Name" value={this.state.lastName} onChange={this.handleLastNameChange} />
                 <input type="text" placeholder="Your Email" value={this.state.email} onChange={this.handleEmailChange} />
-                <input type="submit" value="Post" />
+                <input type="submit" value="Add User" />
             </form>
         );
     }

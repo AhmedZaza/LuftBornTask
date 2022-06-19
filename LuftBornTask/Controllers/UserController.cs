@@ -33,6 +33,16 @@ namespace LuftBornTask.Controllers
             _context.SaveChanges();
             return Ok();
         }
+        [HttpPost]
+        public IActionResult Delete(DeleteUserModel Model)
+        {
+            ApplicationUser user = _context.Users.FirstOrDefault(a => a.Id == Model.Id);
+
+            //TODO: Create Users Repository instead of using db context directly
+            _context.Remove(user);
+            _context.SaveChanges();
+            return Ok();
+        }
         public IActionResult All()
         {
             return Json(_context.Users.ToList());
